@@ -1,0 +1,22 @@
+{
+  "name": "contradiction_branch",
+  "description": "A preference that changes over time branches into a timeline: the old preference is kept as history (validity closed, demoted to dormant) while the new one becomes current. Nothing is silently overwritten.",
+  "events": [
+    {"source": "notes", "kind": "entry", "payload": {"text": "had a lovely cup of tea this morning"}, "occurred_at": "2026-01-10T08:00:00+00:00"},
+    {"source": "notes", "kind": "entry", "payload": {"text": "switched to coffee, tea just isn't doing it anymore"}, "occurred_at": "2026-06-20T08:00:00+00:00"}
+  ],
+  "llm_structured": [
+    {"beliefs": [
+      {"type": "preference", "statement": "Prefers tea", "confidence": 0.7, "salience": 0.5, "source_episode_ids": []},
+      {"type": "preference", "statement": "Prefers coffee", "confidence": 0.8, "salience": 0.6, "source_episode_ids": []}
+    ]},
+    {"relation": "contradicts", "reason": "the user switched from tea to coffee"}
+  ],
+  "learn_now": "2026-06-20T09:00:00+00:00",
+  "expected": [
+    {"kind": "belief_present", "statement": "Prefers coffee", "tier": "active"},
+    {"kind": "belief_tier", "statement": "Prefers tea", "tier": "dormant"},
+    {"kind": "has_successor", "statement": "Prefers tea"},
+    {"kind": "event_present", "statement": "Prefers tea", "event_type": "contradicted"}
+  ]
+}

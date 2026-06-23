@@ -1,0 +1,22 @@
+{
+  "name": "use_it_or_lose_it",
+  "description": "Two equally trivial facts. One is retrieved (used); the other is never touched. After identical time passes, retrieval feedback spares the used belief from pruning while the unused one is forgotten. This is the core departure from time-based decay.",
+  "events": [
+    {"source": "notes", "kind": "entry", "payload": {"text": "weather rainy this morning"}, "occurred_at": "2026-01-05T08:00:00+00:00"},
+    {"source": "notes", "kind": "entry", "payload": {"text": "office coffee machine empty"}, "occurred_at": "2026-01-05T09:00:00+00:00"}
+  ],
+  "llm_structured": [
+    {"beliefs": [
+      {"type": "fact", "statement": "Weather was rainy", "confidence": 0.5, "salience": 0.1, "source_episode_ids": []},
+      {"type": "fact", "statement": "Office coffee machine empty", "confidence": 0.5, "salience": 0.1, "source_episode_ids": []}
+    ]}
+  ],
+  "learn_now": "2026-01-05T10:00:00+00:00",
+  "retrieve": {"query": "weather rainy", "k": 1, "now": "2026-01-06T10:00:00+00:00"},
+  "maintain_now": "2026-09-01T12:00:00+00:00",
+  "maintain_rounds": 3,
+  "expected": [
+    {"kind": "belief_present", "statement": "Weather was rainy"},
+    {"kind": "belief_absent", "statement": "Office coffee machine empty"}
+  ]
+}

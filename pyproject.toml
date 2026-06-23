@@ -1,0 +1,36 @@
+[project]
+name = "cortex"
+version = "0.1.0"
+description = "A self-curating memory for a personal agent — belief revision over an episodic activity log."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "httpx>=0.27",
+]
+# Real LLM providers are optional; the deterministic mock needs none of them.
+vertex = ["google-genai>=0.3"]
+openai = ["openai>=1.30"]
+claude = ["anthropic>=0.25"]
+
+[project.scripts]
+cortex = "cortex.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["cortex"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

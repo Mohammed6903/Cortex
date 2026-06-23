@@ -1,0 +1,22 @@
+{
+  "name": "fact_supersede",
+  "description": "A factual correction supersedes the old belief: the outdated fact is archived and linked to its replacement, which becomes the active truth.",
+  "events": [
+    {"source": "calendar", "kind": "event", "payload": {"title": "dentist near home in Mumbai"}, "occurred_at": "2026-02-01T10:00:00+00:00"},
+    {"source": "calendar", "kind": "event", "payload": {"title": "moving day — new flat in Pune"}, "occurred_at": "2026-06-15T10:00:00+00:00"}
+  ],
+  "llm_structured": [
+    {"beliefs": [
+      {"type": "fact", "statement": "Lives in Mumbai", "confidence": 0.8, "salience": 0.6, "source_episode_ids": []},
+      {"type": "fact", "statement": "Lives in Pune", "confidence": 0.9, "salience": 0.6, "source_episode_ids": []}
+    ]},
+    {"relation": "contradicts", "reason": "relocation"}
+  ],
+  "learn_now": "2026-06-15T11:00:00+00:00",
+  "expected": [
+    {"kind": "belief_present", "statement": "Lives in Pune", "tier": "active"},
+    {"kind": "belief_tier", "statement": "Lives in Mumbai", "tier": "archived"},
+    {"kind": "has_successor", "statement": "Lives in Mumbai"},
+    {"kind": "event_present", "statement": "Lives in Mumbai", "event_type": "superseded"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "stale_prune",
+  "description": "A trivial, low-salience observation that is never revisited drifts down the tiers (active -> dormant -> archived) and is finally pruned. Forgetting tracks utility, not a clock.",
+  "events": [
+    {"source": "notes", "kind": "entry", "payload": {"text": "chatted about the weather being grey today"}, "occurred_at": "2026-01-05T12:00:00+00:00"}
+  ],
+  "llm_structured": [
+    {"beliefs": [
+      {"type": "transient_state", "statement": "Talked about the weather", "confidence": 0.5, "salience": 0.1, "source_episode_ids": []}
+    ]}
+  ],
+  "learn_now": "2026-01-05T12:30:00+00:00",
+  "maintain_now": "2026-09-01T12:00:00+00:00",
+  "maintain_rounds": 3,
+  "expected": [
+    {"kind": "belief_absent", "statement": "Talked about the weather"}
+  ]
+}

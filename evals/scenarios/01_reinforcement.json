@@ -1,0 +1,21 @@
+{
+  "name": "reinforcement",
+  "description": "Two pieces of corroborating evidence for the same preference collapse into one belief whose confidence rises and whose reinforcement count increments.",
+  "events": [
+    {"source": "editor", "kind": "file_opened", "payload": {"path": "api.py", "lang": "python"}, "occurred_at": "2026-06-23T09:00:00+00:00"},
+    {"source": "browser", "kind": "visit", "payload": {"url": "docs.python.org"}, "occurred_at": "2026-06-23T09:30:00+00:00"}
+  ],
+  "llm_structured": [
+    {"beliefs": [
+      {"type": "preference", "statement": "Prefers Python", "confidence": 0.7, "salience": 0.7, "source_episode_ids": []},
+      {"type": "preference", "statement": "Prefers Python", "confidence": 0.7, "salience": 0.7, "source_episode_ids": []}
+    ]},
+    {"relation": "reinforces", "reason": "same preference, more evidence"}
+  ],
+  "learn_now": "2026-06-23T10:00:00+00:00",
+  "expected": [
+    {"kind": "belief_present", "statement": "Prefers Python", "tier": "active"},
+    {"kind": "reinforced", "statement": "Prefers Python", "min_count": 1},
+    {"kind": "count_active", "value": 1}
+  ]
+}
