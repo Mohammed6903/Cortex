@@ -20,11 +20,15 @@ import typer
 
 from .config import Config
 from .engine import Cortex
+from .envfile import load_env_file
 from .ingestion import feed
 from .llm.factory import build_llm
 from .llm.mock import MockLLM
 from .store import beliefs as belief_store
 from .store.db import connect, init_schema
+
+# Pick up <repo>/.env (provider/keys) for `cortex ...` invocations too.
+load_env_file()
 
 app = typer.Typer(add_completion=False, help="A self-curating memory for a personal agent.")
 

@@ -17,7 +17,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from .engine import Cortex
+from .envfile import load_env_file
 from .session import current_engine, get_session
+
+# Load <repo>/.env before anything reads Config, so `uvicorn cortex.api:app` picks up
+# CORTEX_LLM_PROVIDER / DASHSCOPE_API_KEY without a manual export.
+load_env_file()
 
 app = FastAPI(title="Cortex", description="A self-curating memory for a personal agent.")
 
