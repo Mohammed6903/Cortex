@@ -5,3 +5,8 @@ __pycache__/
 *.sqlite3
 .cortex/
 evals/reports/
+
+# Secrets / local env — never commit (holds DASHSCOPE_API_KEY etc.)
+.env
+.env.*
+!.env.example
