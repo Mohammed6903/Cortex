@@ -239,12 +239,19 @@ class Session:
 
 # Process-wide scratch session. Lazily seeds on first ``engine()`` access.
 _SESSION: Optional[Session] = None
+# Guards singleton CREATION. Without it, a cold-start burst (the UI fires reset twice on
+# mount) lets two threads each build their own Session — two separate locks, no
+# serialization — and they collide seeding the same scratch db (UNIQUE constraint on
+# beliefs.id). Double-checked so the common hot path stays lock-free.
+_SESSION_LOCK = threading.Lock()
 
 
 def get_session() -> Session:
     global _SESSION
     if _SESSION is None:
-        _SESSION = Session()
+        with _SESSION_LOCK:
+            if _SESSION is None:
+                _SESSION = Session()
     return _SESSION
 
 
