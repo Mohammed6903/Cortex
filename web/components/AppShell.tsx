@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Command, Database, ListTree } from "lucide-react";
+import { Activity, Brain, Command, Database, ListTree } from "lucide-react";
 import { SessionProvider, useSession } from "./SessionContext";
 import { Mono } from "./primitives/Mono";
 
@@ -14,7 +14,8 @@ function fmtNow(d: Date): string {
 }
 
 const NAV = [
-  { href: "/", label: "Monitor", icon: Activity },
+  { href: "/brain", label: "Brain", icon: Brain },
+  { href: "/", label: "Sandbox (Vitals)", icon: Activity },
   { href: "/beliefs", label: "Ledger", icon: ListTree },
 ];
 
@@ -23,9 +24,9 @@ function Sidebar() {
   return (
     <nav className="flex w-14 flex-col items-center gap-1 border-r border-border bg-surface-0 py-3">
       <Link
-        href="/"
+        href="/brain"
         className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-surface-2"
-        title="Cortex Vitals"
+        title="Cortex — your second brain"
       >
         <Database size={16} className="text-accent" />
       </Link>

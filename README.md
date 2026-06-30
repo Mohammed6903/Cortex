@@ -15,6 +15,31 @@ overwriting them**, and **forgetting by usefulness rather than by a clock**.
 
 ---
 
+## Daily second brain (`/brain`)
+
+Beyond the lifecycle engine, Cortex runs as a real, persistent, single-user second brain
+(`~/.cortex/brain.db`; real Qwen chat + `text-embedding-v3`):
+
+- **Journal** in your own words → it distills typed beliefs (adds/revises, **never deletes**).
+- **Ask** → it recommends a decision suited to your situation, *or* drafts a reply **in your
+  voice** — grounded only in your beliefs + a voice/values profile, **with citations**. A
+  *Critical Recall* step assembles a prioritized context (semantic + core constraints + goals +
+  relationships + persona) before the model answers.
+- **Voice**: an authored style/values card **plus** an inferred voice that refreshes from your writing.
+
+```bash
+cp .env.example .env        # set CORTEX_LLM_PROVIDER=qwen + DASHSCOPE_API_KEY
+.venv/bin/uvicorn cortex.api:app --reload     # API :8000
+cd web && npm run dev                          # UI  :3000  → open /brain
+```
+
+Brain API: `POST /brain/journal`, `POST /brain/ask` (`mode=auto|decide|draft`),
+`GET/PUT /brain/profile`, `POST /brain/profile/refresh`, `GET /brain/beliefs`, `GET /brain/stats`.
+The brain never auto-prunes — daily memory is precious; pruning is explicit. The deterministic
+**Vitals** demo (`/`) runs on a disposable *scratch* session, isolated from your real brain.
+
+---
+
 ## The model
 
 Three layers, each with one job:

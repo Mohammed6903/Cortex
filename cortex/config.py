@@ -18,6 +18,8 @@ class Config:
 
     # --- Storage ---
     db_path: str = "cortex.db"
+    # The persistent, single-user "brain" — real daily memory, never scratch/seeded.
+    brain_db_path: str = "~/.cortex/brain.db"
 
     # --- Distillation ---
     distill_window: int = 20  # episodes considered per distillation pass
@@ -54,6 +56,7 @@ class Config:
         return Config(
             llm_provider=e.get("CORTEX_LLM_PROVIDER", d.llm_provider),
             db_path=e.get("CORTEX_DB_PATH", d.db_path),
+            brain_db_path=e.get("CORTEX_BRAIN_DB_PATH", d.brain_db_path),
             distill_window=i("CORTEX_DISTILL_WINDOW", d.distill_window),
             related_similarity=f("CORTEX_RELATED_SIMILARITY", d.related_similarity),
             duplicate_similarity=f("CORTEX_DUPLICATE_SIMILARITY", d.duplicate_similarity),

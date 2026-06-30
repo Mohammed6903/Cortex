@@ -61,6 +61,14 @@ CREATE TABLE IF NOT EXISTS vectors (
     vector    TEXT NOT NULL                  -- JSON array of floats
 );
 
+CREATE TABLE IF NOT EXISTS profile (
+    id             TEXT PRIMARY KEY,              -- single row, 'me'
+    authored_voice TEXT NOT NULL DEFAULT '',      -- user-written style/values card
+    inferred_voice TEXT NOT NULL DEFAULT '',      -- LLM-summarized voice from recent writing
+    values_card    TEXT NOT NULL DEFAULT '',
+    updated_at     TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_beliefs_tier ON beliefs(tier);
 CREATE INDEX IF NOT EXISTS idx_belief_events_belief ON belief_events(belief_id, at);
 CREATE INDEX IF NOT EXISTS idx_episodes_occurred ON episodes(occurred_at);

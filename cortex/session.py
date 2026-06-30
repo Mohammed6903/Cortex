@@ -237,8 +237,78 @@ class Session:
         }
 
 
+class BrainSession:
+    """The persistent, single-user *brain* — real daily memory.
+
+    Unlike :class:`Session` (the disposable scratch sandbox), this is bound to the real
+    ``brain_db_path`` and is **never** wiped or seeded with canned scenarios. Its LLM is the
+    configured real provider *directly* (chat AND embeddings — e.g. Qwen ``text-embedding-v3``),
+    so the brain's vector space is genuinely semantic and self-consistent. If no real provider
+    is configured it degrades to mock (reads still work; journaling/ask are gated with a clear
+    message by the API).
+    """
+
+    def __init__(self, config: Optional[Config] = None) -> None:
+        base = config or Config.from_env()
+        brain_path = os.path.expanduser(base.brain_db_path)
+        self.requested_provider = (base.llm_provider or "mock").lower()
+        self.config = dataclasses.replace(base, db_path=brain_path)
+        # Real (e.g. Qwen 1024-dim) embeddings have a far higher baseline cosine than the
+        # lexical hash (~0.4 between unrelated texts vs ~0 for the hash), so the hashing-tuned
+        # related/duplicate thresholds would treat nearly everything as related. Raise them for
+        # a real provider — unless the user explicitly overrode them via env.
+        if self.requested_provider != "mock":
+            repl: dict[str, float] = {}
+            if self.config.related_similarity == Config.related_similarity:
+                repl["related_similarity"] = 0.55
+            if self.config.duplicate_similarity == Config.duplicate_similarity:
+                repl["duplicate_similarity"] = 0.90
+            if repl:
+                self.config = dataclasses.replace(self.config, **repl)
+        self._engine: Optional[Cortex] = None
+        self._lock = threading.RLock()
+        self.active_provider = self.requested_provider
+        self.degraded = False
+        self.degrade_reason: Optional[str] = None
+
+    @property
+    def db_path(self) -> str:
+        return self.config.db_path
+
+    def _build_llm(self):
+        if self.requested_provider == "mock":
+            self.active_provider, self.degraded = "mock", False
+            return MockLLM()
+        try:
+            llm = build_llm(
+                dataclasses.replace(self.config, llm_provider=self.requested_provider)
+            )
+            self.active_provider, self.degraded = self.requested_provider, False
+            return llm
+        except Exception as exc:  # no key / SDK — degrade so reads still work
+            self.active_provider, self.degraded = "mock", True
+            self.degrade_reason = (
+                f"{self.requested_provider!r} unavailable ({exc}); set the provider's API key "
+                f"to enable journaling and ask. The brain still reads existing memory."
+            )
+            return MockLLM()
+
+    def engine(self) -> Cortex:
+        with self._lock:
+            if self._engine is None:
+                parent = os.path.dirname(self.db_path)
+                if parent:
+                    os.makedirs(parent, exist_ok=True)
+                conn = connect(self.db_path)
+                init_schema(conn)
+                self._engine = Cortex(conn, self._build_llm(), self.config)
+            return self._engine
+
+
 # Process-wide scratch session. Lazily seeds on first ``engine()`` access.
 _SESSION: Optional[Session] = None
+_BRAIN: Optional[BrainSession] = None
+_BRAIN_LOCK = threading.Lock()
 # Guards singleton CREATION. Without it, a cold-start burst (the UI fires reset twice on
 # mount) lets two threads each build their own Session — two separate locks, no
 # serialization — and they collide seeding the same scratch db (UNIQUE constraint on
@@ -262,3 +332,17 @@ def current_engine() -> Cortex:
 
 def reset_session(scenario: Optional[str] = None) -> dict[str, Any]:
     return get_session().reset(scenario)
+
+
+def get_brain_session() -> BrainSession:
+    """The process-wide persistent brain (single user)."""
+    global _BRAIN
+    if _BRAIN is None:
+        with _BRAIN_LOCK:
+            if _BRAIN is None:
+                _BRAIN = BrainSession()
+    return _BRAIN
+
+
+def brain_engine() -> Cortex:
+    return get_brain_session().engine()

@@ -44,17 +44,33 @@ class Cortex:
         ]
 
     # --- maintenance (forgetting) ---
-    def maintain(self, now: Optional[datetime] = None) -> dict[str, Any]:
+    def maintain(
+        self, now: Optional[datetime] = None, prune: bool = True
+    ) -> dict[str, Any]:
+        """Consolidate duplicates, demote by retention, and (optionally) hard-prune.
+
+        ``prune=False`` is the safe mode for the persistent brain: beliefs may consolidate and
+        cool down the tiers, but nothing is irreversibly deleted. Pruning (a real DELETE with
+        no event) must be opted into explicitly.
+        """
         moment = now or datetime.now(timezone.utc)
         merged = consolidate(self.conn, self.config, moment)
         demoted = retention.apply_retention(self.conn, self.config, moment)
-        pruned = retention.prune(self.conn, self.config, moment)
+        pruned = retention.prune(self.conn, self.config, moment) if prune else []
         return {"merged": merged, "demoted": demoted, "pruned": pruned}
 
     # --- retrieval ---
     def retrieve(self, query: str, k: int = 5, now: Optional[datetime] = None) -> list[Belief]:
         moment = now or datetime.now(timezone.utc)
         return _retrieve(self.conn, self.llm, query, k, moment, self.config)
+
+    # --- ask / decide (second-brain voice) ---
+    def ask(
+        self, question: str, mode: str = "auto", now: Optional[datetime] = None
+    ) -> dict[str, Any]:
+        from .ask import answer  # local import avoids an import cycle
+
+        return answer(self, question, mode=mode, now=now)
 
     # --- inspection ---
     def snapshot(self) -> list[Belief]:

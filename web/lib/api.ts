@@ -153,6 +153,70 @@ export interface ConfigResponse {
   };
 }
 
+// ---- BRAIN: the persistent daily store (real provider; journal + ask) ----
+
+export interface BrainStats {
+  held: number;
+  dormant: number;
+  archived: number;
+  total: number;
+  provider: string;
+  degraded: boolean;
+  degrade_reason: string | null;
+  db: string;
+}
+
+export interface Profile {
+  authored_voice: string;
+  inferred_voice: string;
+  values_card: string;
+  updated_at: string | null;
+}
+
+export interface LearnedBelief {
+  action: LearnAction;
+  belief_id: string;
+  statement: string | null;
+  type: BeliefTypeName | null;
+}
+
+export interface JournalResponse {
+  ok: boolean;
+  learned: LearnedBelief[];
+  ack: string;
+}
+
+export type AskMode = "auto" | "decide" | "draft";
+
+export interface DecideOption {
+  action: string;
+  rationale: string;
+  fit?: string;
+  tradeoffs?: string;
+}
+
+export interface RecalledBelief {
+  id: string;
+  type: BeliefTypeName;
+  statement: string;
+}
+
+/** One response shape covers both modes; fields are populated per `mode`. */
+export interface AskResponse {
+  mode: "decide" | "draft";
+  // decide
+  recommendation?: string;
+  options?: DecideOption[];
+  confidence?: number;
+  conflicts?: string[];
+  // draft
+  draft?: string;
+  tone_notes?: string;
+  // shared
+  cited_belief_ids: string[];
+  recalled: RecalledBelief[];
+}
+
 // ---- low-level fetch ----
 
 export class ApiError extends Error {
@@ -246,6 +310,29 @@ export const api = {
   stats: () => get<StatsResponse>("/stats"),
 
   config: () => get<ConfigResponse>("/config"),
+
+  // --- BRAIN (persistent daily store) ---
+  brain: {
+    stats: () => get<BrainStats>("/brain/stats"),
+    beliefs: (all = true) =>
+      get<Belief[]>(`/brain/beliefs?all=${all ? "true" : "false"}`),
+    belief: (id: string) => get<Belief>(`/brain/beliefs/${encodeURIComponent(id)}`),
+    timeline: (id: string) =>
+      get<BeliefEvent[]>(`/brain/beliefs/${encodeURIComponent(id)}/timeline`),
+    provenance: (id: string) =>
+      get<Episode[]>(`/brain/beliefs/${encodeURIComponent(id)}/provenance`),
+    getProfile: () => get<Profile>("/brain/profile"),
+    setProfile: (authored_voice: string, values_card: string) =>
+      request<Profile>("/brain/profile", {
+        method: "PUT",
+        body: JSON.stringify({ authored_voice, values_card }),
+      }),
+    refreshVoice: () => post<Profile>("/brain/profile/refresh"),
+    journal: (text: string, now?: string) =>
+      post<JournalResponse>("/brain/journal", now ? { text, now } : { text }),
+    ask: (question: string, mode: AskMode = "auto", now?: string) =>
+      post<AskResponse>("/brain/ask", now ? { question, mode, now } : { question, mode }),
+  },
 };
 
 export type Api = typeof api;
