@@ -331,7 +331,7 @@ export default function LedgerPage() {
     : "scratch session";
 
   return (
-    <div className="flex min-h-0 flex-col gap-3 p-4 lg:p-6">
+    <div className="flex h-full min-h-0 flex-col gap-3 p-4 lg:p-6">
       {/* ── header ── */}
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -489,7 +489,10 @@ function LedgerTable({
       <div
         ref={scrollRef}
         className="min-h-0 flex-1 overflow-auto"
-        style={{ contain: "strict" }}
+        // `contain: content` (layout+paint, NOT size) — size containment collapsed this
+        // scroll body to 0px height when the flex chain lacked a definite height, hiding
+        // every row. Height now comes from the flex-1 chain (page is h-full of <main>).
+        style={{ contain: "content" }}
       >
         {/* top spacer for windowed-out rows */}
         <div style={{ height: padTop }} aria-hidden />
